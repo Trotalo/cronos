@@ -1,0 +1,35 @@
+name: Cronos
+version: 0.0.1
+lowCaseName: cronos
+namespace: Cronos
+description: 'worker attendances control tool'
+author: camicase82
+
+menus:
+    - text: cronos.menu
+      description: cronos.menu_desc
+      action: manage
+
+systemSettings:
+    - key: build_path
+      area: build
+      value: _packages
+    - key: enable_debug
+      area: system
+      type: combo-boolean
+      value: 0
+
+database:
+    tables:
+        - Cronos\Model\CronosAttendance
+
+chunks:
+  - name: 'GestionarSupervisores'
+    file: 'GestionarSupervisores.html'
+  - name: 'Login'
+    file: 'Login.html'
+  - name: 'RegistrarActividad'
+    file: 'RegistrarActividad.html'
+  - name: 'Reports'
+    file: 'Reports.html'
+

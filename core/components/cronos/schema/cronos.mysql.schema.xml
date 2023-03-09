@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="Cronos\Model\" baseClass="xPDO\Om\xPDOSimpleObject" platform="mysql" defaultEngine="InnoDB" version="3.0">
+    <object class="CronosAttendance" table="vlox_cronos_attendance">
+        <field key="supervisor_id" dbtype="int" precision="11" attributes="unsigned" phptype="integer" null="false" />
+        <field key="worker_id" dbtype="int" precision="11" attributes="unsigned" phptype="integer" null="false" />
+        <field key="in_date" dbtype="int" precision="20" phptype="timestamp" null="false" default="0" />
+        <field key="out_date" dbtype="int" precision="20" phptype="timestamp" null="false" default="0" />
+        <field key="in_photo_check" dbtype="varchar" precision="255" phptype="string" null="false" default="" />
+        <field key="out_photo_check" dbtype="varchar" precision="255" phptype="string" null="false" default="" />
+    </object>
+</model>

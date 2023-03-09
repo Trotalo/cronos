@@ -1,0 +1,9 @@
+assets/components/vlox/renderedBlocks/*.vue
+/_packages/*
+vendor
+dist
+node_modules
+[0-9]*
+/_build/gpm_resolvers/
+/_build/gpm_scripts/
+

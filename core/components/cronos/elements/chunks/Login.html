@@ -1,0 +1,132 @@
+<script setup>
+  import { ref } from 'vue'
+  import { useQuasar } from 'quasar'
+  import axios from 'axios'
+
+  const $q = useQuasar()
+
+  axios.defaults.withCredentials = true
+
+  const axiosConfig = {
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Access-Control-Allow-Origin': '*'
+    }
+  }
+
+  const formState = ref({
+
+    username: "servicemanager@heightaccess.com",
+    password: "servicemanager@heightaccess.com",
+    returnUrl: "/tmplogin.html",
+    service: "login",
+    Login: "Login"
+
+  });
+
+  const error = ref('')
+
+  async function login() {
+    try {
+      error.value = ''
+      const objectToStore = formState._rawValue
+      $q.loading.show({
+        delay: 400, // ms
+        message: 'Cargando...'
+      })
+      const response = await axios({
+        method: "post",
+        url: window.location.protocol + "//" + window.location.hostname  + "/cronos/assets/components/cronos/rest/index.php?_rest=Login",
+        data: objectToStore
+      }, axiosConfig)
+      /*formState.value = {
+        username: '',
+        password: '',
+      }*/
+      $q.loading.hide()
+      if (response.data && response.data.object) {
+        if (!response.data.object.success) {
+          error.value = response.data.object.message
+        } else {
+          window.location.href = response.data.object.redirect
+        }
+      } else {
+        console.error(response)
+        error.value = "Error inesperado, intenta de nuevo!"
+      }
+
+
+    } catch (er) {
+      //showMessage(error.response.data.message)
+      $q.loading.hide()
+      alert(er)
+    }
+  }
+
+  function validateEmail(email) {
+    return /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/.test(email);
+  }
+</script>
+
+<template>
+  <div class="column q-pa-lg">
+    <div class="row">
+      <q-card square class="shadow-24" style="width:90vw;height:540px;">
+        <q-card-section class="bg-deep-purple-7">
+          <h4 v-if="error != ''" class="text-h4 text-red q-my-md">{{error}}</h4>
+          <h4 class="text-h5 text-white q-my-md">Trotalo - Empresas</h4>
+
+        </q-card-section>
+        <q-form class="q-px-sm q-pt-xl" @submit.prevent="login">
+          <q-card-section>
+
+            <q-input v-model="formState.username"
+                     square
+                     clearable
+                     type="email"
+                     label="Email"
+                     :rules="[(val) => validateEmail(val) || 'Ingresa un mail valido!.']">
+              <template v-slot:prepend>
+                <q-icon name="email"/>
+              </template>
+            </q-input>
+            <q-input v-model="formState.password"
+                     square
+                     clearable
+                     label="Password"
+                     type="password" hint="Password"
+                     :rules="[(val) => (val && val.length > 4) || 'Ingresa tu clave!',]">
+
+              <template v-slot:prepend>
+                <q-icon name="lock"/>
+              </template>
+              <template v-slot:append>
+                <!--q-icon
+                    :name="visibilityIcon" class="cursor-pointer" /-->
+              </template>
+            </q-input>
+
+          </q-card-section>
+
+          <q-card-actions class="q-px-lg">
+            <q-btn
+              unelevated
+              size="lg"
+              color="secondary"
+              class="full-width text-white"
+              type="submit"
+              label="Ingresar"/>
+          </q-card-actions>
+        </q-form>
+        <q-card-section
+          class="text-center q-pa-sm">
+          <p class="text-grey-6">Olvido su clave?</p>
+        </q-card-section>
+      </q-card>
+    </div>
+  </div>
+</template>
+<style scoped lang="scss">
+    //Place styles here
+</style>
