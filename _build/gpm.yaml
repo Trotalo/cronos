@@ -33,3 +33,6 @@ chunks:
   - name: 'Reports'
     file: 'Reports.html'
 
+build:
+  scriptsAfter:
+    - resourcesAndPermissions.php

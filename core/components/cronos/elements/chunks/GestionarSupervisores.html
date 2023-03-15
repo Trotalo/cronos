@@ -1,5 +1,5 @@
 <script setup>
-  import {ref, onMounted } from 'vue'
+  import {ref, onMounted, inject } from 'vue'
   import axios from 'axios'
   import { useQuasar } from 'quasar'
 
@@ -26,11 +26,14 @@
   const confirmDelete = ref(false);
   const confirmCreate = ref(false);
   const users = ref([]);
-  //const formState: ref(formState)
-
+  //constant for webservices routes
+  const wsRoute = inject('wsroute')
+  const assetsRoute = inject('assetsRoute')
+  
   onMounted(() => {
     loadUsers()
   })
+  
 
   function submitForm() {
     confirmCreate.value = true;
@@ -47,12 +50,15 @@
     try {
       const response = await axios({
         method: "post",
-        url: window.location.protocol + "//" + window.location.hostname  + "/cronos/assets/components/cronos/rest/index.php?_rest=SystemUsers",
+        url: window.location.protocol + "//" + window.location.hostname  + wsRoute  + "?_rest=SystemUsers",
         data: objectToStore
       }, axiosConfig)
       loadUsers();
       $q.loading.hide()
-      showMessage('¡Usuario creado exitosamente!')
+       $q.dialog({
+        title: 'Exitoso!',
+        message: '¡Usuario creado exitosamente!'
+      })
       newSupervisor.value = false
       formState.value = {
         name: '',
@@ -64,7 +70,11 @@
 
     } catch (error) {
       $q.loading.hide()
-      showMessage(error.response.data.message)
+      $q.dialog({
+        title: 'Error',
+        message: error.response.data.message
+      })
+      
     }
   }
 
@@ -72,30 +82,28 @@
     try {
       const response = await axios({
         method: 'get',
-        url: window.location.protocol + "//" + window.location.hostname  + "/cronos/assets/components/cronos/rest/index.php?_rest=SystemUsers"
+        url: window.location.protocol + "//" + window.location.hostname  + wsRoute + "?_rest=SystemUsers"
       }, axiosConfig)
       console.log(response)
       users.value = response.data.results
     } catch (error) {
-      showMessage(error.response.data.message)
+      if (error?.response?.data?.message) {
+        $q.dialog({
+          title: 'Error',
+          message: error.response.data.message
+        })  
+      } else {
+        $q.dialog({
+            title: 'Error',
+            message: error
+          })  
+      }
+      
     }
   }
 
   function rules() {
     return this.$utils.requiredRule
-  }
-
-  function showMessage (msg) {
-    $q.dialog({
-      title: 'Alert',
-      message: msg
-    }).onOk(() => {
-      // console.log('OK')
-    }).onCancel(() => {
-      // console.log('Cancel')
-    }).onDismiss(() => {
-      // console.log('I am triggered on both OK and Cancel')
-    })
   }
 
   function validateEmail(email) {
@@ -106,7 +114,7 @@
 <template>
   <q-card class="my-card" @click="supervisorModal = true">
     <q-parallax
-      src="/cronos/assets/components/cronos/images/users.jpg"
+      :src="assetsRoute +  'images/users.jpg'"
       :height="150"
     />
 

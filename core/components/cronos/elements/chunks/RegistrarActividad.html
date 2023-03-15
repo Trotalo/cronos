@@ -1,5 +1,5 @@
 <script setup>
-  import {ref, onMounted} from 'vue'
+  import {ref, onMounted, inject} from 'vue'
   import axios from 'axios'
   import {useQuasar} from 'quasar'
 
@@ -33,8 +33,9 @@
   const attendance = ref([])
   const userOptions = ref([])
   let originalOptions = []
-
-  //const formState: ref(formState)
+  //configuration constants
+  const wsRoute = inject('wsroute')
+  const assetsRoute = inject('assetsRoute')
 
   onMounted(() => {
     loadAttendance()
@@ -77,15 +78,15 @@
         form_data.append("worker_id", objectToStore.worker_id)
         const fileResponse = await axios({
           method: "post",
-          url: "https://192.168.0.107/cronos/assets/components/cronos/rest/index.php?_rest=Files",
+          url: window.location.protocol + "//" + window.location.hostname  + wsRoute + "?_rest=Files",
           data: form_data
         }, axiosConfig);
         if (fileResponse.data && fileResponse.data.message) {
           //TODO fix the hard coded server addres, this is only for dev
           if (mode === 0) {
-            objectToStore.in_photo_check = "https://192.168.0.107" + fileResponse.data.message.substring(13)
+            objectToStore.in_photo_check = window.location.protocol + "//" + window.location.hostname + fileResponse.data.message.substring(13)
           } else {
-            objectToStore.out_photo_check = "https://192.168.0.107" + fileResponse.data.message.substring(13)
+            objectToStore.out_photo_check = window.location.protocol + "//" + window.location.hostname + fileResponse.data.message.substring(13)
           }
 
         } else {
@@ -96,12 +97,23 @@
 
       const response = await axios({
         method: mode === 0 ? "post" : "put",
-        url: window.location.protocol + "//" + window.location.hostname  + "/cronos/assets/components/cronos/rest/index.php?_rest=Attendance",
+        url: window.location.protocol + "//" + window.location.hostname  + wsRoute + "?_rest=Attendance",
         data: objectToStore
       }, axiosConfig)
-      loadAttendance()
       $q.loading.hide()
-      showMessage('¡Ingreso registrado exitosamente!')
+      if (typeof response.data === 'string' && response.data.includes('Fatal error')) {
+        $q.dialog({
+          title: '¡Error!',
+          message: '¡Un error grave a ocurrido, por favor contacte a su administrador!!' 
+        })
+        return;
+      } 
+      
+      loadAttendance()
+      $q.dialog({
+        title: 'Exito!',
+        message: '¡Ingreso registrado exitosamente!' 
+      })
       if (mode === 0) {
         newIngreso.value = false
       } else {
@@ -118,11 +130,10 @@
 
     } catch (error) {
       $q.loading.hide()
-      if (error.response) {
-        showMessage(error.response.data.message)
-      } else {
-        showMessage(error)
-      }
+      $q.dialog({
+        title: 'Error!',
+        message: error.response?.data?.message ? error.response.data.message : error 
+      })
     }
   }
 
@@ -130,12 +141,15 @@
     try {
       const response = await axios({
         method: 'get',
-        url: window.location.protocol + "//" + window.location.hostname  + "/cronos/assets/components/cronos/rest/index.php?_rest=SystemUsers"
+        url: window.location.protocol + "//" + window.location.hostname  + wsRoute + "?_rest=SystemUsers"
       }, axiosConfig)
       users.value = response.data.results
       originalOptions = response.data.results
     } catch (error) {
-      showMessage(error.response.data.message)
+      $q.dialog({
+        title: 'Error!',
+        message: error.response.data.message
+      })
     }
   }
 
@@ -143,17 +157,15 @@
     try {
       const response = await axios({
         method: 'get',
-        url: window.location.protocol + "//" + window.location.hostname  + "/cronos/assets/components/cronos/rest/index.php?_rest=Attendance/666"
+        url: window.location.protocol + "//" + window.location.hostname  + wsRoute + "?_rest=Attendance/666"
       }, axiosConfig)
       attendance.value = response.data.results
       originalOptions = response.data.results
     } catch (error) {
-      if (error.response) {
-        showMessage(error.response.data.message)
-      } else {
-        showMessage(error)
-      }
-
+      $q.dialog({
+        title: 'Error!',
+        message: error.response ? error.response.data.message : error
+      })
     }
   }
 
@@ -169,19 +181,6 @@
     update(() => {
       const needle = val.toLowerCase()
       users.value = originalOptions.filter(v => v.fullname.toLowerCase().indexOf(needle) > -1)
-    })
-  }
-
-  function showMessage(msg) {
-    $q.dialog({
-      title: 'Atencion!',
-      message: msg
-    }).onOk(() => {
-      // console.log('OK')
-    }).onCancel(() => {
-      // console.log('Cancel')
-    }).onDismiss(() => {
-      // console.log('I am triggered on both OK and Cancel')
     })
   }
 
@@ -206,7 +205,7 @@
 <template>
   <q-card class="my-card" @click="supervisorModal = true">
     <q-parallax
-      src="/cronos/assets/components/cronos/images/clock.avif"
+      :src="assetsRoute + 'images/clock.avif'"
       :height="150"
     />
 

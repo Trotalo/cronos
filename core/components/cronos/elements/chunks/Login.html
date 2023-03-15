@@ -1,11 +1,14 @@
 <script setup>
-  import { ref } from 'vue'
+  import { ref, inject } from 'vue'
   import { useQuasar } from 'quasar'
   import axios from 'axios'
 
   const $q = useQuasar()
 
   axios.defaults.withCredentials = true
+  
+  const wsRoute = inject('wsroute')
+  const assetsRoute = inject('assetsRoute')
 
   const axiosConfig = {
     headers: {
@@ -17,8 +20,8 @@
 
   const formState = ref({
 
-    username: "servicemanager@heightaccess.com",
-    password: "servicemanager@heightaccess.com",
+    username: "",
+    password: "",
     returnUrl: "/tmplogin.html",
     service: "login",
     Login: "Login"
@@ -37,7 +40,7 @@
       })
       const response = await axios({
         method: "post",
-        url: window.location.protocol + "//" + window.location.hostname  + "/cronos/assets/components/cronos/rest/index.php?_rest=Login",
+        url: window.location.protocol + "//" + window.location.hostname  + wsRoute + "?_rest=Login",
         data: objectToStore
       }, axiosConfig)
       /*formState.value = {
@@ -47,20 +50,37 @@
       $q.loading.hide()
       if (response.data && response.data.object) {
         if (!response.data.object.success) {
-          error.value = response.data.object.message
+          $q.dialog({
+            title: 'Error',
+            message: response.data.object.message
+          })
         } else {
           window.location.href = response.data.object.redirect
         }
       } else {
         console.error(response)
-        error.value = "Error inesperado, intenta de nuevo!"
+        $q.dialog({
+            title: 'Error',
+            message: 'Error inesperado, intenta de nuevo!'
+          })
       }
-
-
+    
     } catch (er) {
-      //showMessage(error.response.data.message)
       $q.loading.hide()
-      alert(er)
+      if (er.response && er.response.data && er.response.data.message) {
+        $q.dialog({
+          title: 'Error',
+          message: er.response.data.message
+        })
+      } else {
+        $q.dialog({
+          title: 'Error',
+          message: er
+        })
+      }
+      //showMessage(error.response.data.message)
+      
+      
     }
   }
 
@@ -72,7 +92,21 @@
 <template>
   <div class="column q-pa-lg">
     <div class="row">
-      <q-card square class="shadow-24" style="width:90vw;height:540px;">
+      <q-card class="gt-xs col-grow">
+        <q-card-section>
+          <q-img
+            :src="assetsRoute + 'media/vertical.png'"
+            spinner-color="white"
+            class="rounded-borders"
+          >
+          
+            <!--<div class="absolute-bottom text-subtitle1 text-center">
+              Trotalo - Herramientas de productividad
+            </div>-->
+          </q-img>
+        </q-card-section>
+      </q-card>
+      <q-card square class="shadow-24 col-xs-12 col-sm-5" style="overflow: auto;">
         <q-card-section class="bg-deep-purple-7">
           <h4 v-if="error != ''" class="text-h4 text-red q-my-md">{{error}}</h4>
           <h4 class="text-h5 text-white q-my-md">Trotalo - Empresas</h4>
@@ -83,7 +117,6 @@
 
             <q-input v-model="formState.username"
                      square
-                     clearable
                      type="email"
                      label="Email"
                      :rules="[(val) => validateEmail(val) || 'Ingresa un mail valido!.']">
@@ -93,7 +126,6 @@
             </q-input>
             <q-input v-model="formState.password"
                      square
-                     clearable
                      label="Password"
                      type="password" hint="Password"
                      :rules="[(val) => (val && val.length > 4) || 'Ingresa tu clave!',]">
@@ -119,10 +151,10 @@
               label="Ingresar"/>
           </q-card-actions>
         </q-form>
-        <q-card-section
+        <!--<q-card-section
           class="text-center q-pa-sm">
           <p class="text-grey-6">Olvido su clave?</p>
-        </q-card-section>
+        </q-card-section>-->
       </q-card>
     </div>
   </div>
