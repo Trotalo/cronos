@@ -33,14 +33,12 @@ function createResource($parent, $name, $contents, $resGroup, $modx){
   if (empty($resource)) {
     $resource = $modx->newObject('modResource');
   }
-
-  // Create the new resource
   $resource->fromArray($resource_data);
-  $resource->save();
-  if(!empty($resGroup)) {
+  if(!is_null($resGroup)) {
     $resource->set('resource_groups', array($resGroup));
-    $resource->save();
+    //$resource->save();
   }
+  $resource->save();
   return $resource->get('id');
 }
 
@@ -75,7 +73,7 @@ $content = <<<HTML
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
-    <script type="module" crossorigin src="/assets/components/cronos/1/js/index-4b24ec74.js"></script>
+    <script type="module" crossorigin src="/assets/components/cronos/1/js/index-31a9d07f.js"></script>
     <link rel="stylesheet" href="/assets/components/cronos/1/css/index-a43169bf.css">
   </head>
   <body>
@@ -84,7 +82,7 @@ $content = <<<HTML
   </body>
 </html>
 HTML;
-$loginId = createResource(0, 'Login2', $content, null, $modx);
+$loginId = createResource(0, 'Login', $content, null, $modx);
 //then we create the serviceManager
 $content = <<<HTML
 <!DOCTYPE html>
@@ -106,4 +104,25 @@ HTML;
 //we get the resource group
 $resource_group = $modx->getObject('modResourceGroup', ['name' => 'ServiceManager']);
 
-createResource($loginId, 'serviceManager2', $content, $resource_group->get('id'), $modx);
+createResource($loginId, 'serviceManager', $content, $resource_group->get('id'), $modx);
+
+//Finally we create the sueprvisor page
+$content = <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite App</title>
+    <script type="module" crossorigin src="/assets/components/cronos/23/js/index-3ba9a990.js"></script>
+    <link rel="stylesheet" href="/assets/components/cronos/23/css/index-4473896e.css">
+  </head>
+  <body>
+    <div id="q-app" style="min-height: 60rem;"></div>
+    
+  </body>
+</html>
+HTML;
+//we get the resource group
+createResource($loginId, 'supervisor', $content, $resource_group->get('id'), $modx);
