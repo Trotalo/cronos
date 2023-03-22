@@ -42,11 +42,11 @@ class CronosAttendance extends  modRestController {
   public function get() {
     $pk = $this->getProperty($this->primaryKeyField);
     //we query the user and check the type, if service manager return everithing else return only needed data
-    $sessionId = $this->modx->quote($_COOKIE['PHPSESSID']);
+    $userId = $this->modx->user->get('id');
     $logedUserGroupQuery = "select modGroup.*, users.id as userId
                               from modx.modx_membergroup_names modGroup, 
                                 modx.modx_users users, modx.modx_user_attributes usrAttr
-                                where usrAttr.sessionid = $sessionId
+                                where usrAttr.internalKey = $userId
                                 and usrAttr.internalKey = users.id
                                 and users.primary_group = modGroup.id";
 
@@ -85,34 +85,22 @@ class CronosAttendance extends  modRestController {
     }
 
     $returnValue = array();
-    while ($row = $query->fetch()) {
-      //$this->modx->log(xPDO::LOG_LEVEL_ERROR, json_encode($row));
-      $dataRow = new stdClass;
-      $dataRow->id = $row['id'];
-      $dataRow->worker_id = $row['worker_id'];
-      $dataRow->supervisor_id = $row['supervisor_id'];
-      $dataRow->in_date = $row['in_date'];
-      $dataRow->out_date = $row['out_date'];
-      $dataRow->in_photo_check = $row['in_photo_check'];
-      $dataRow->out_photo_check = $row['out_photo_check'];
-      $dataRow->fullname = $row['fullname'];
-      $returnValue[] = $dataRow;
+    while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
+      $returnValue[] = $row;
     }
-    /*
-     * id, operator_id, fullname, event_date, photo_check, comments
-     * */
+
     return $this->collection($returnValue);
   }
 
   public function post()
   {
-    $sessionId = $this->modx->quote($_COOKIE['PHPSESSID']);
-    $userProfile = $this->modx->getObject($this->modxPrefix . 'modUserProfile',
-      ['sessionid' => $_COOKIE['PHPSESSID']]);
-    if (empty($userProfile)) {
-      return $this->failure('No existing session for the user!', null, 400);
+    $userId = $userId = $this->modx->user->get('id');
+    $this->properties['supervisor_id'] = $userId;
+    if ($this->properties['out_date'] === 0) {
+      $this->properties['in_date'] = date('Y-m-d H:i:s');
+    } else {
+      $this->properties['out_date'] = date('Y-m-d H:i:s');
     }
-    $this->properties['supervisor_id'] = $userProfile->get('internalKey');
     parent::post();
   }
 

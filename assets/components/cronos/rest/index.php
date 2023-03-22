@@ -59,8 +59,13 @@ if (!$modx->services->has('rest.modRestService')) {
 $rest = $modx->services->get('rest.modRestService');
 $rest->prepare();
 
-if (!$rest->checkPermissions()) {
+if (strcmp($rest->request->action, 'Login') !== 0
+  && !$modx->user->isAuthenticated('web')) {
   $rest->sendUnauthorized(true);
+  return;
 }
+/*if (!$rest->checkPermissions()) {
+  $rest->sendUnauthorized(true);
+}*/
 
 $rest->process();

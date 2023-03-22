@@ -111,26 +111,6 @@ class CronosReports extends \MODX\Revolution\Rest\modRestController {
       $returnValue[] = $row;
     }
 
-    /*$objects = $this->modx->getCollection('Cronos\Model\CronosAttendance');
-
-    if (empty($objects)) {
-      $objects = [];
-    }
-    $list = [];
-    foreach ($objects as $object) {
-      $list[] = $this->prepareListObject($object);
-    }*/
-
-    //return $this->collection($list, $total);
-
-    /*$products= [];
-    foreach ($res_prods as $key => $product) :
-      $product_id = $product->ID;
-
-      $products[$product_id]['product_id'] = $product_id;
-      $products[$product_id]['name'] = $product->name;
-    endforeach;*/
-
     return $this->outputCsv($returnValue);
   }
 

@@ -45,6 +45,9 @@
 use MODX\Revolution\Rest\modRestController;
 use MODX\Revolution\Rest\modRestServiceRequest;
 use MODX\Revolution\modUser;
+use MODX\Revolution\modUserGroup;
+use MODX\Revolution\modResource;
+
 
 class CronosLogin extends  \MODX\Revolution\Rest\modRestController {
   /** @var string $classKey The xPDO class to use */
@@ -76,13 +79,36 @@ class CronosLogin extends  \MODX\Revolution\Rest\modRestController {
     } else {
       //Retrieve the user
       $user = $this->modx->getObject(modUser::class, array('username' => $properties['username']));
-      $serviceManager = $this->modx->makeUrl(22);
-      $supervisorPage = $this->modx->makeUrl(23);
+      //we retrieve the id for the exisitng respurces
+      //TODO deletemete
+      $resources = array();
+      $result = $this->modx->query("SELECT * 
+                                            FROM modx_site_content 
+                                            WHERE pagetitle='serviceManager'
+                                            OR pagetitle='supervisor'");
+      if (!is_object($result)) {
+        return $this->failure('Missing configuration, please contact your system admin',
+          null, 500);
+      }
+      else {
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+          //$this->modx->log(xPDO::LOG_LEVEL_ERROR, json_encode($row));
+          $resources[$row['pagetitle']] = $row;
+        }
+      }
+      //TODO close deeleteme
+      $resourceId =  $resources['serviceManager']['id'];
+      $serviceManager = $this->modx->makeUrl($resourceId);
+      $resourceId = $resources['supervisor']['id'];
+      $supervisorPage = $this->modx->makeUrl($resourceId);
       $primaryGroup = $user->get('primary_group');
-      if ($primaryGroup === 4  || $primaryGroup ==1 ) {
+      //we get the exiting groups
+      $serviceMgrGroup = $this->modx->getObject(modUserGroup::class, ['name'=> 'ServiceManager']);
+      $operatorMgrGroup = $this->modx->getObject(modUserGroup::class, ['name'=> 'Supervisor']);
+      if ($primaryGroup === $serviceMgrGroup->get('id')  || $primaryGroup ==1 ) {
         $response['redirect'] = $serviceManager;
       }
-      elseif ($primaryGroup === 2) {
+      elseif ($primaryGroup === $operatorMgrGroup->get('id')) {
         $response['redirect'] = $supervisorPage;
       }
     }

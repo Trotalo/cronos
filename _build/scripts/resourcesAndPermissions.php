@@ -1,4 +1,6 @@
 <?php
+/*require_once('/var/www/html/config.core.php');
+require_once('/var/www/html/core/model/modx/modx.class.php');*/
 
 use MODX\Revolution\modAccessPermission;
 use MODX\Revolution\modX;
@@ -9,6 +11,8 @@ if ($options[xPDOTransport::PACKAGE_ACTION] === xPDOTransport::ACTION_UNINSTALL)
 }
 
 $modx =& $transport->xpdo;
+/*$modx = new modX();
+$modx->initialize('web');*/
 
 /**
  * @param $parent id of the parent resource
@@ -34,11 +38,10 @@ function createResource($parent, $name, $contents, $resGroup, $modx){
     $resource = $modx->newObject('modResource');
   }
   $resource->fromArray($resource_data);
-  if(!is_null($resGroup)) {
-    $resource->set('resource_groups', array($resGroup));
-    //$resource->save();
-  }
   $resource->save();
+  if(!is_null($resGroup)) {
+    $resource->joinGroup($resGroup);
+  }
   return $resource->get('id');
 }
 
@@ -125,4 +128,5 @@ $content = <<<HTML
 </html>
 HTML;
 //we get the resource group
+$resource_group = $modx->getObject('modResourceGroup', ['name' => 'Supervisor']);
 createResource($loginId, 'supervisor', $content, $resource_group->get('id'), $modx);
