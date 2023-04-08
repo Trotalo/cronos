@@ -21,7 +21,10 @@ $modx->initialize('web');
 if ($modx->services->has('error')) {
   $service = $modx->services->get('error');
 }
-//$modx->getService('error', 'error.modError', '', '');
+
+//Development flags to enable webservices from vite
+//header('Access-Control-Allow-Origin: https://192.168.0.103:5173');
+//header('Access-Control-Allow-Credentials: true');
 
 if ($modx->getRequest()) {
   $modx->request->sanitizeRequest();
@@ -59,7 +62,7 @@ if (!$modx->services->has('rest.modRestService')) {
 $rest = $modx->services->get('rest.modRestService');
 $rest->prepare();
 
-if (strcmp($rest->request->action, 'Login') !== 0
+if (!strcmp($modx->user->username, 'admin') === 0 && !strcmp($rest->request->action, 'Login') !== 0
   && !$modx->user->isAuthenticated('web')) {
   $rest->sendUnauthorized(true);
   return;

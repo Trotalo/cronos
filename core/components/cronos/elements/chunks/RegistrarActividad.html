@@ -2,6 +2,7 @@
   import {ref, onMounted, inject} from 'vue'
   import axios from 'axios'
   import {useQuasar} from 'quasar'
+  import imageCompression from 'browser-image-compression'
 
   const axiosConfig = {
     headers: {
@@ -23,6 +24,12 @@
     in_photo_check: '',
     out_photo_check: '',
   });
+  
+  const compressOptions = {
+    fileType: 'image/jpeg',
+    maxSizeMB: 0.5,
+    maxIteration: 100,
+  };
 
   const newIngreso = ref(false)
   const supervisorModal = ref(false)
@@ -54,14 +61,20 @@
     if (mode === 0) {
       objectToStore.in_date = new Date().toJSON()
       if (!objectToStore.worker_id || !objectToStore.in_photo_check) {
-        showMessage('Por favor selecciona una persona y una foto para el registro!')
-        return;
+        $q.dialog({
+          title: '¡Error!',
+          message: 'Por favor selecciona una persona y una foto para el registro!'
+        })
+        return
       }
     } else {
       objectToStore.out_date = new Date().toJSON();
       if (!objectToStore.out_photo_check) {
-        showMessage('Por favor selecciona una persona y una foto para el registro!')
-        return;
+        $q.dialog({
+          title: '¡Error!',
+          message: 'Por favor selecciona una persona y una foto para el registro!'
+        })
+        return
       }
     }
     $q.loading.show({
@@ -72,9 +85,12 @@
       //first we check if we have a file and upload it
       let photo_check = (mode === 0 ? objectToStore.in_photo_check : objectToStore.out_photo_check);
       if (photo_check instanceof File) {
+        //first we compress the picture
+        //compressOptions
+        const compressedFile = await imageCompression(photo_check, compressOptions)
         //we load the picture
         var form_data = new FormData()
-        form_data.append("file", photo_check)
+        form_data.append("file", compressedFile)
         form_data.append("worker_id", objectToStore.worker_id)
         const fileResponse = await axios({
           method: "post",
@@ -130,10 +146,8 @@
 
     } catch (error) {
       $q.loading.hide()
-      $q.dialog({
-        title: 'Error!',
-        message: error.response?.data?.message ? error.response.data.message : error 
-      })
+      processError(error)
+      
     }
   }
 
@@ -146,10 +160,7 @@
       users.value = response.data.results
       originalOptions = response.data.results
     } catch (error) {
-      $q.dialog({
-        title: 'Error!',
-        message: error.response.data.message
-      })
+      processError(error)
     }
   }
 
@@ -162,10 +173,7 @@
       attendance.value = response.data.results
       originalOptions = response.data.results
     } catch (error) {
-      $q.dialog({
-        title: 'Error!',
-        message: error.response ? error.response.data.message : error
-      })
+      processError(error)
     }
   }
 
@@ -200,6 +208,20 @@
       exitModal.value = true
 
   }
+  
+  function processError(error) {
+    if (error.response?.status === 401) {
+        $q.dialog({
+          title: 'Error de seguridad!',
+          message: 'Tu sesion ha finalizado, por favor vuelve a ingresar' 
+        })  
+    } else {
+      $q.dialog({
+        title: 'Error!',
+        message: error.response?.data?.message ? error.response.data.message : error 
+      })  
+    }
+  }
 </script>
 
 <template>
@@ -210,7 +232,7 @@
     />
 
     <q-card-section>
-      <div class="text-h6">Gestionar actividades test</div>
+      <div class="text-h6">Gestionar actividades</div>
       <div class="text-subtitle2">Registra el ingreso o salida de personal</div>
     </q-card-section>
   </q-card>
@@ -284,10 +306,26 @@
           <q-uploader
             style="width: 97%"
             label="Toma una foto para validacion"
-            accept=".jpg, image/*"
+            accept="image/*"
             @added="(files, mode) => addedFile(files, 1)"
+            capture="user"
             hide-upload-btn
-          />
+          >
+            <template v-slot:header="scope">
+              <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
+                <div class="col" v-if="scope.queuedFiles.length > 0" icon="clear_all" @click="scope.removeQueuedFiles" round dense flat >
+                  <q-tooltip>Clear All</q-tooltip>
+                </div>
+                
+                <div class="col" v-if="scope.canAddFiles" type="a" icon-right="add_box" label="Pick Files" dense flat>
+                  <span class="text-h6">Pick files</span>
+                  <q-uploader-add-trigger></q-uploader-add-trigger>
+                  <q-tooltip>Pick Files</q-tooltip>
+                </div>
+                
+              </div>
+            </template>
+          </q-uploader>  
         </q-card-section>
         <q-card-actions align="right">
           <!--<q-btn flat>Cancel</q-btn>
@@ -350,10 +388,26 @@
             style="width: 97%"
             url="http://localhost:4444/upload"
             label="Toma una foto para validacion"
-            accept=".jpg, image/*"
+            accept="image/*"
             @added="(files, mode) => addedFile(files, 0)"
             hide-upload-btn
-          />
+            capture="user"
+          >
+            <template v-slot:header="scope">
+              <div class="row no-wrap items-center q-pa-sm q-gutter-xs">
+                <div class="col" v-if="scope.queuedFiles.length > 0" icon="clear_all" @click="scope.removeQueuedFiles" round dense flat >
+                  <q-tooltip>Clear All</q-tooltip>
+                </div>
+                
+                <div class="col" v-if="scope.canAddFiles" type="a" icon-right="add_box" label="Pick Files" dense flat>
+                  <span class="text-h6">Pick files</span>
+                  <q-uploader-add-trigger></q-uploader-add-trigger>
+                  <q-tooltip>Pick Files</q-tooltip>
+                </div>
+                
+              </div>
+            </template>
+          </q-uploader>
         </q-card-section>
         <q-card-actions align="right">
           <!--<q-btn flat>Cancel</q-btn>

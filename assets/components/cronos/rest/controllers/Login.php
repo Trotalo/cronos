@@ -120,7 +120,7 @@ class CronosLogin extends  \MODX\Revolution\Rest\modRestController {
   public function delete()
   {
     $response = $this->modx->runProcessor('security/logout');
-    return $this->success('Login executed',$response);
+    return $this->success('Logout executed',$response);
   }
 
 }

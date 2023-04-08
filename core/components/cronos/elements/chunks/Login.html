@@ -47,9 +47,10 @@
         username: '',
         password: '',
       }*/
-      $q.loading.hide()
+      //$q.loading.hide()
       if (response.data && response.data.object) {
         if (!response.data.object.success) {
+          $q.loading.hide()
           $q.dialog({
             title: 'Error',
             message: response.data.object.message
@@ -58,7 +59,7 @@
           window.location.href = response.data.object.redirect
         }
       } else {
-        console.error(response)
+        $q.loading.hide()
         $q.dialog({
             title: 'Error',
             message: 'Error inesperado, intenta de nuevo!'

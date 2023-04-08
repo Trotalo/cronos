@@ -61,7 +61,7 @@ class CronosAttendance extends  modRestController {
       return $this->failure("No existing session for the user!", null, 400);
     }
     $queryText = '';
-    if (strcmp($userGroup['name'], 'ServiceManager') === 0 ) {
+    if (strcmp($userGroup['name'], 'ServiceManager') === 0 || strcmp($userGroup['name'], 'Administrator') === 0 ) {
       $queryText = "select usrAttribute.internalKey as operator_id, 
                     usrAttribute.fullname, attendance.*
                     from modx_vlox_cronos_attendance attendance, 

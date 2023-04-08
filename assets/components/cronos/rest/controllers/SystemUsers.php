@@ -122,6 +122,7 @@ class CronosSystemUsers  extends  modRestController {
       $dataRow->id = $row['id'];
       $dataRow->fullname = $row['fullname'];
       $dataRow->group = $row['primary_group'];
+      $dataRow->groupName = $row['name'];
       $dataRow->email = $row['email'];
       $returnValue[] = $dataRow;
     }

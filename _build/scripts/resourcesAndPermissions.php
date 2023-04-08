@@ -30,8 +30,10 @@ function createResource($parent, $name, $contents, $resGroup, $modx){
   $resource_data = array(
     'pagetitle' => $name, // The title of the new resource
     'parent' => $parent, // Assign the new resource to the parent
-    //'template' => $template, // The ID of the template to use
+    'uri' => strtolower($name) . '.html',
+    'template' => 0, // The ID of the template to use
     'content' => $contents,
+    'published' => 1
   );
 
   if (empty($resource)) {
@@ -76,7 +78,7 @@ $content = <<<HTML
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
-    <script type="module" crossorigin src="/assets/components/cronos/1/js/index-31a9d07f.js"></script>
+    <script type="module" crossorigin src="/assets/components/cronos/1/js/index-03180710.js"></script>
     <link rel="stylesheet" href="/assets/components/cronos/1/css/index-a43169bf.css">
   </head>
   <body>
@@ -95,7 +97,7 @@ $content = <<<HTML
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
-    <script type="module" crossorigin src="/assets/components/cronos/22/js/index-3a1de505.js"></script>
+    <script type="module" crossorigin src="/assets/components/cronos/22/js/index-7dcad71e.js"></script>
     <link rel="stylesheet" href="/assets/components/cronos/22/css/index-f62128b0.css">
   </head>
   <body>
@@ -118,7 +120,7 @@ $content = <<<HTML
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
-    <script type="module" crossorigin src="/assets/components/cronos/23/js/index-3ba9a990.js"></script>
+    <script type="module" crossorigin src="/assets/components/cronos/23/js/index-80e34541.js"></script>
     <link rel="stylesheet" href="/assets/components/cronos/23/css/index-4473896e.css">
   </head>
   <body>
