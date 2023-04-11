@@ -3,6 +3,7 @@
   import axios from 'axios'
   import {useQuasar} from 'quasar'
   import imageCompression from 'browser-image-compression'
+  import { useI18n } from 'vue-i18n'
 
   const axiosConfig = {
     headers: {
@@ -43,6 +44,8 @@
   //configuration constants
   const wsRoute = inject('wsroute')
   const assetsRoute = inject('assetsRoute')
+  
+  const { t } = useI18n()
 
   onMounted(() => {
     loadAttendance()
@@ -62,7 +65,7 @@
       objectToStore.in_date = new Date().toJSON()
       if (!objectToStore.worker_id || !objectToStore.in_photo_check) {
         $q.dialog({
-          title: '¡Error!',
+          title: t('error_title'),
           message: 'Por favor selecciona una persona y una foto para el registro!'
         })
         return
@@ -71,15 +74,15 @@
       objectToStore.out_date = new Date().toJSON();
       if (!objectToStore.out_photo_check) {
         $q.dialog({
-          title: '¡Error!',
-          message: 'Por favor selecciona una persona y una foto para el registro!'
+          title: t('error_title'),
+          message: t('mng_act_select_person_picture_error')
         })
         return
       }
     }
     $q.loading.show({
       delay: 400, // ms
-      message: 'Guardando...'
+      message: t('global_saving')
     })
     try {
       //first we check if we have a file and upload it
@@ -120,15 +123,15 @@
       if (typeof response.data === 'string' && response.data.includes('Fatal error')) {
         $q.dialog({
           title: '¡Error!',
-          message: '¡Un error grave a ocurrido, por favor contacte a su administrador!!' 
+          message: t('fatal_error_body') 
         })
         return;
       } 
       
       loadAttendance()
       $q.dialog({
-        title: 'Exito!',
-        message: '¡Ingreso registrado exitosamente!' 
+        title: t('global_success'),
+        message: t('mng_act_entry_success')
       })
       if (mode === 0) {
         newIngreso.value = false
@@ -212,12 +215,12 @@
   function processError(error) {
     if (error.response?.status === 401) {
         $q.dialog({
-          title: 'Error de seguridad!',
-          message: 'Tu sesion ha finalizado, por favor vuelve a ingresar' 
+          title: t('error_title'),
+          message: t('global_missing_session') 
         })  
     } else {
       $q.dialog({
-        title: 'Error!',
+        title: t('error_title'),
         message: error.response?.data?.message ? error.response.data.message : error 
       })  
     }
@@ -232,56 +235,58 @@
     />
 
     <q-card-section>
-      <div class="text-h6">Gestionar actividades</div>
-      <div class="text-subtitle2">Registra el ingreso o salida de personal</div>
+      <div class="text-h6">{{ t('mng_act_card_title') }}</div>
+      <div class="text-subtitle2">{{ t('mng_act_card_subtitle') }}</div>
     </q-card-section>
   </q-card>
 
   <q-dialog v-model="supervisorModal" full-width full-height>
     <q-card>
       <q-card-section>
-        <div class="text-h6">Administrar Actividades</div>
+        <div class="text-h6">{{ t('mng_act_modal_title') }}</div>
       </q-card-section>
 
       <q-separator/>
       <q-separator/>
 
       <q-card-section style="max-height: 80vh" class="scroll">
-        <q-list bordered class="rounded-borders" style="max-width: 100%">
-          <q-item-label header>Actividades</q-item-label>
+        <q-list bordered class="rounded-borders" style="max-height: 68vh">
+          <!--<q-item-label header>{{ t('mng_act_modal_list_title') }}</q-item-label>
 
-          <q-separator spaced/>
+          <q-separator spaced/>-->
           <q-item v-for="registry in attendance" :key="registry.id">
-            <q-item-section avatar top>
-              <q-avatar>
-                <img :src="registry.in_photo_check">
-              </q-avatar>
-            </q-item-section>
-            <q-item-section top>
-              <!--<q-item-label lines="1" class="q-mt-xs text-body2 text-weight-bold text-primary text-uppercase">
-                <span>{{user.fullname}}</span>
-              </q-item-label>-->
-              <q-item-label>{{ registry.fullname }}</q-item-label>
-              <q-item-label caption lines="1">IN: {{ longToDateTime(registry.in_date) }}</q-item-label>
-
-            </q-item-section>
-
-            <q-item-section top side>
-              <div class="text-grey-8 q-gutter-xs">
-                <q-btn size="12px" flat dense round icon="transfer_within_a_station"
-                       @click="registerWorkerExit(registry)"/>
-              </div>
-            </q-item-section>
+            <q-btn @click="registerWorkerExit(registry)">
+              <template v-slot:default>
+                <q-item-section avatar top>
+                  <q-avatar>
+                    <img :src="registry.in_photo_check">
+                  </q-avatar>
+                </q-item-section>
+                <q-item-section top>
+                  <!--<q-item-label lines="1" class="q-mt-xs text-body2 text-weight-bold text-primary text-uppercase">
+                    <span>{{user.fullname}}</span>
+                  </q-item-label>-->
+                  <q-item-label>{{ registry.fullname }}</q-item-label>
+                  <q-item-label caption lines="1">IN: {{ longToDateTime(registry.in_date) }}</q-item-label>
+    
+                </q-item-section>
+                <q-item-section top side>
+                <div class="text-grey-8 q-gutter-xs">
+                  <q-btn size="12px" flat dense round icon="transfer_within_a_station"
+                         />
+                </div>
+              </q-item-section>
+              </template>
+            </q-btn>
           </q-item>
-
         </q-list>
       </q-card-section>
 
       <q-separator/>
 
       <q-card-actions align="right">
-        <q-btn flat label="Cerrar" color="primary" v-close-popup/>
-        <q-btn flat label="Registrar Ingreso" color="positive" @click="newIngreso = true"/>
+        <q-btn flat :label="t('mng_act_btn_close')" color="primary" v-close-popup/>
+        <q-btn flat :label="t('mng_act_btn_register')" color="positive" @click="newIngreso = true"/>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -290,16 +295,16 @@
     <q-card>
       <q-form @submit.prevent="confirmExit = true">
         <q-card-section>
-          <div class="text-h6">Registrar Salida</div>
+          <div class="text-h6">{{ t('mng_act_exit_modal_title') }}</div>
           <div class="text-subtitle1">
-            Registra la salida de {{ formState.fullname }}
+            {{t('mng_act_exit_modal_confirm', { fullname: formState.fullname }) }}
           </div>
         </q-card-section>
         <q-separator inset/>
         <q-card-section class="column q-gutter-md">
           <q-input
             v-model="formState.out_date"
-            label="Hora actual"
+            :label="t('mng_act_new_register_sub_time')"
             readonly
           ></q-input>
 
@@ -318,9 +323,8 @@
                 </div>
                 
                 <div class="col" v-if="scope.canAddFiles" type="a" icon-right="add_box" label="Pick Files" dense flat>
-                  <span class="text-h6">Pick files</span>
+                  <span class="text-h6">{{ t('mng_act_new_register_upload') }}</span>
                   <q-uploader-add-trigger></q-uploader-add-trigger>
-                  <q-tooltip>Pick Files</q-tooltip>
                 </div>
                 
               </div>
@@ -341,9 +345,9 @@
     <q-card>
       <q-form @submit.prevent="submitForm">
         <q-card-section>
-          <div class="text-h6">Registrar Nuevo Ingreso</div>
+          <div class="text-h6">{{ t('mng_act_new_register_title')}}</div>
           <div class="text-subtitle1">
-            Completa los datos para registrar el movimiento de personal
+            {{ t('mng_act_new_register_sub_title') }}
           </div>
         </q-card-section>
         <q-separator inset/>
@@ -359,7 +363,7 @@
             :option-value="'id'"
             :option-label="'fullname'"
             @filter="filterFn"
-            hint="Selecciona a la persona"
+            :hint="t('mng_act_new_register_sub_select')"
           >
             <template v-slot:no-option>
               <q-item>
@@ -373,7 +377,7 @@
 
           <q-input
             v-model="formState.in_date"
-            label="Hora actual"
+            :label="t('mng_act_new_register_sub_time')"
             readonly
           ></q-input>
 
@@ -398,13 +402,10 @@
                 <div class="col" v-if="scope.queuedFiles.length > 0" icon="clear_all" @click="scope.removeQueuedFiles" round dense flat >
                   <q-tooltip>Clear All</q-tooltip>
                 </div>
-                
-                <div class="col" v-if="scope.canAddFiles" type="a" icon-right="add_box" label="Pick Files" dense flat>
-                  <span class="text-h6">Pick files</span>
+                <div class="col" v-if="scope.canAddFiles" type="a" icon-right="add_box" dense flat>
+                  <span class="text-h6">{{ t('mng_act_new_register_upload') }}</span>
                   <q-uploader-add-trigger></q-uploader-add-trigger>
-                  <q-tooltip>Pick Files</q-tooltip>
                 </div>
-                
               </div>
             </template>
           </q-uploader>
@@ -412,8 +413,8 @@
         <q-card-actions align="right">
           <!--<q-btn flat>Cancel</q-btn>
           <q-btn color="primary" type="submit">Create Account</q-btn>-->
-          <q-btn flat label="Cancelar" color="negative" v-close-popup/>
-          <q-btn flat label="Guardar" color="positive" type="submit"/>
+          <q-btn flat :label="t('global_cancel')" color="negative" v-close-popup/>
+          <q-btn flat :label="t('global_save')" color="positive" type="submit"/>
         </q-card-actions>
       </q-form>
     </q-card>
@@ -423,12 +424,14 @@
     <q-card>
       <q-card-section class="row items-center">
         <q-avatar icon="signal_wifi_off" color="primary" text-color="white"/>
-        <span class="q-ml-sm">¿Estás seguro que quieres registrar este ingreso?</span>
+        <span class="q-ml-sm">{{ t('mng_act_confim_entry_text') }}</span>
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn flat label="Cancelar" color="negative" v-close-popup/>
-        <q-btn flat label="Guardar" color="positive" @click="saveAttendance(0)"/>
+        <!--<q-btn flat :label="t('global_cancel')" color="negative" v-close-popup/>
+        <q-btn flat :label="t('global_save')" color="positive" @click="saveAttendance(0)"/>-->
+        <q-btn flat :label="t('global_cancel')" color="negative" v-close-popup/>
+        <q-btn flat :label="t('global_save')" color="positive" @click="saveAttendance(0)"/>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -437,12 +440,12 @@
     <q-card>
       <q-card-section class="row items-center">
         <q-avatar icon="signal_wifi_off" color="primary" text-color="white"/>
-        <span class="q-ml-sm">¿Estas seguro que quieres registrar esta salida?</span>
+        <span class="q-ml-sm">{{ t('mng_act_confim_exit_text') }}</span>
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn flat label="Cancelar" color="negative" v-close-popup/>
-        <q-btn flat label="Guardar" color="positive" @click="saveAttendance(1)"/>
+        <q-btn flat :label="t('global_cancel')" color="negative" v-close-popup/>
+        <q-btn flat :label="t('global_save')" color="positive" @click="saveAttendance(1)"/>
       </q-card-actions>
     </q-card>
   </q-dialog>

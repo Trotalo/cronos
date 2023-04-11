@@ -2,6 +2,7 @@
   import { ref, inject } from 'vue'
   import { useQuasar } from 'quasar'
   import axios from 'axios'
+  import { useI18n } from 'vue-i18n'
 
   const $q = useQuasar()
 
@@ -29,6 +30,8 @@
   });
 
   const error = ref('')
+  
+  const { t } = useI18n()
 
   async function login() {
     try {
@@ -36,7 +39,7 @@
       const objectToStore = formState._rawValue
       $q.loading.show({
         delay: 400, // ms
-        message: 'Cargando...'
+        message: t('global_loading')
       })
       const response = await axios({
         method: "post",
@@ -61,24 +64,24 @@
       } else {
         $q.loading.hide()
         $q.dialog({
-            title: 'Error',
-            message: 'Error inesperado, intenta de nuevo!'
+            title: t('error_title'),
+          message: t('fatal_error_body') 
           })
       }
     
-    } catch (er) {
+    } catch (error) {
       $q.loading.hide()
-      if (er.response && er.response.data && er.response.data.message) {
+      if (error.response?.status === 401) {
         $q.dialog({
-          title: 'Error',
-          message: er.response.data.message
-        })
-      } else {
-        $q.dialog({
-          title: 'Error',
-          message: er
-        })
-      }
+          title: t('error_title'),
+          message: t('global_missing_session') 
+        })  
+    } else {
+      $q.dialog({
+        title: t('error_title'),
+        message: error.response?.data?.message ? error.response.data.message : error 
+      })  
+    }
       //showMessage(error.response.data.message)
       
       
@@ -110,7 +113,7 @@
       <q-card square class="shadow-24 col-xs-12 col-sm-5" style="overflow: auto;">
         <q-card-section class="bg-deep-purple-7">
           <h4 v-if="error != ''" class="text-h4 text-red q-my-md">{{error}}</h4>
-          <h4 class="text-h5 text-white q-my-md">Trotalo - Empresas</h4>
+          <h4 class="text-h5 text-white q-my-md">{{ t('login_title') }}</h4>
 
         </q-card-section>
         <q-form class="q-px-sm q-pt-xl" @submit.prevent="login">
@@ -120,7 +123,7 @@
                      square
                      type="email"
                      label="Email"
-                     :rules="[(val) => validateEmail(val) || 'Ingresa un mail valido!.']">
+                     :rules="[(val) => validateEmail(val) || t('login_valid_email')]">
               <template v-slot:prepend>
                 <q-icon name="email"/>
               </template>
@@ -129,7 +132,7 @@
                      square
                      label="Password"
                      type="password" hint="Password"
-                     :rules="[(val) => (val && val.length > 4) || 'Ingresa tu clave!',]">
+                     :rules="[(val) => (val && val.length > 4) || t('login_valid_pass'),]">
 
               <template v-slot:prepend>
                 <q-icon name="lock"/>
@@ -149,7 +152,7 @@
               color="secondary"
               class="full-width text-white"
               type="submit"
-              label="Ingresar"/>
+              :label="t('login_ok_button')"/>
           </q-card-actions>
         </q-form>
         <!--<q-card-section

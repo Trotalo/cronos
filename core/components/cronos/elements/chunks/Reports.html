@@ -2,6 +2,7 @@
 import {ref, onMounted, inject} from 'vue'
 import axios from 'axios'
 import {useQuasar} from 'quasar'
+import { useI18n } from 'vue-i18n'
 
 const axiosConfig = {
   headers: {
@@ -19,22 +20,26 @@ const supervisorModal = ref(false);
 const wsRoute = inject('wsroute')
 const assetsRoute = inject('assetsRoute')
 
+const { t } = useI18n()
+
 const columns = [
   {
     name: 'fullname',
-    label: 'Nombre',
+    label: t('reports_tbl_hdr_name'),
     align: 'left',
     field: 'fullname',
     sortable: true
   },
-  { name: 'in_date', align: 'center', label: 'Fecha Ingreso', field: 'in_date', sortable: true },
-  { name: 'out_date', label: 'Fecha Salida', field: 'out_date', sortable: true },
+  { name: 'in_date', align: 'center', label: t('reports_tbl_hdr_in_date'), field: 'in_date', sortable: true },
+  { name: 'out_date', label: t('reports_tbl_hdr_out_date'), field: 'out_date', sortable: true },
   /*{ name: 'carbs', label: 'Carbs (g)', field: 'carbs' },
   { name: 'protein', label: 'Protein (g)', field: 'protein' },
   { name: 'sodium', label: 'Sodium (mg)', field: 'sodium' },
   { name: 'calcium', label: 'Calcium (%)', field: 'calcium', sortable: true, sort: (a, b) => parseInt(a, 10) - parseInt(b, 10) },
   { name: 'iron', label: 'Iron (%)', field: 'iron', sortable: true, sort: (a, b) => parseInt(a, 10) - parseInt(b, 10) }*/
 ]
+
+
 
 onMounted(() => {
   loadAttendance()
@@ -60,17 +65,7 @@ async function loadAttendance() {
           return val
         })
   } catch (error) {
-    if (error.response) {
-      $q.dialog({
-        title: 'Error',
-        message: error.response.data.message
-      })
-    } else {
-      $q.dialog({
-        title: 'Error',
-        message: error
-      })
-    }
+    processError(error)
 
   }
 }
@@ -106,14 +101,24 @@ async function getReport(){
     $q.loading.hide()
   } catch (error) {
     $q.loading.hide()
-    if (error) {
-      showMessage(error)
-    } else {
-      showMessage(error)
-    }
+    processError(error);
 
   }
 }
+
+function processError(error) {
+    if (error.response?.status === 401) {
+        $q.dialog({
+          title: t('error_title'),
+          message: t('global_missing_session') 
+        })  
+    } else {
+      $q.dialog({
+        title: t('error_title'),
+        message: error.response?.data?.message ? error.response.data.message : error 
+      })  
+    }
+  }
 
 </script>
 <template>
@@ -124,23 +129,22 @@ async function getReport(){
     />
 
     <q-card-section>
-      <div class="text-h6">Ver Reportes</div>
-      <div class="text-subtitle2">Visualiza el movimiento de personas</div>
+      <div class="text-h6">{{ t('reports_card_title') }}</div>
+      <div class="text-subtitle2">{{ t('reports_card_subtitle') }}</div>
     </q-card-section>
   </q-card>
 
   <q-dialog v-model="supervisorModal" full-width full-height>
     <q-card>
       <q-card-section>
-        <div class="text-h6">Reportes</div>
+        <div class="text-h6">{{ t('reports_modal_title') }}</div>
       </q-card-section>
 
       <q-separator/>
       <q-separator/>
 
-      <q-card-section style="max-height: 85vh" class="scroll">
+      <q-card-section style="max-height: 70vh" class="scroll">
         <q-table
-            title="Reporte de movimientos"
             :rows="attendance"
             :columns="columns"
             row-key="name"
@@ -148,8 +152,8 @@ async function getReport(){
       </q-card-section>
       <q-separator/>
       <q-card-actions align="right">
-        <q-btn flat label="Cerrar" color="primary" v-close-popup/>
-        <q-btn flat label="Descargar reporte mes" color="positive" @click="getReport"/>
+        <q-btn flat :label="t('mng_act_btn_close')" color="primary" v-close-popup/>
+        <q-btn flat :label="t('reports_modal_download')" color="positive" @click="getReport"/>
       </q-card-actions>
     </q-card>
   </q-dialog>
