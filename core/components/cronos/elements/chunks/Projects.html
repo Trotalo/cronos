@@ -1,0 +1,222 @@
+<script setup>
+import {ref, onMounted, inject } from 'vue'
+import axios from 'axios'
+import { useQuasar } from 'quasar'
+import { useI18n } from 'vue-i18n'
+
+const axiosConfig = {
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Access-Control-Allow-Origin': '*'
+  }
+};
+
+const $q = useQuasar()
+
+const formState = ref({
+  name: ''
+});
+
+const newProject = ref(false);
+const projectModal = ref(false);
+const confirmDelete = ref(false);
+const confirmCreate = ref(false);
+const projects = ref([]);
+//constant for webservices routes
+const wsRoute = inject('wsroute')
+const assetsRoute = inject('assetsRoute')
+
+const { t } = useI18n()
+
+onMounted(() => {
+  loadProjects()
+})
+
+
+function submitForm() {
+  confirmCreate.value = true;
+}
+
+async function saveUser() {
+  confirmCreate.value = false;
+  const objectToStore = formState._rawValue
+  $q.loading.show({
+    delay: 400, // ms
+    message: t('global_saving')
+  })
+  try {
+    const response = await axios({
+      method: "post",
+      url: window.location.protocol + "//" + window.location.hostname  + wsRoute  + "?_rest=Projects",
+      data: objectToStore
+    }, axiosConfig)
+    loadProjects();
+    $q.loading.hide()
+    $q.dialog({
+      title: t('global_success'),
+      message: t('mng_act_entry_success')
+    })
+    newProject.value = false
+    formState.value = {
+      name: ''
+    }
+
+  } catch (error) {
+    $q.loading.hide()
+    processError(error)
+  }
+}
+
+async function loadProjects() {
+  try {
+    const response = await axios({
+      method: 'get',
+      url: window.location.protocol + "//" + window.location.hostname  + wsRoute + "?_rest=Projects"
+    }, axiosConfig)
+    console.log(response)
+    projects.value = response.data.results
+  } catch (error) {
+    processError(error)
+
+  }
+}
+
+function rules() {
+  return this.$utils.requiredRule
+}
+
+function processError(error) {
+  if (error.response?.status === 401) {
+    $q.dialog({
+      title: t('error_title'),
+      message: t('global_missing_session')
+    })
+  } else {
+    $q.dialog({
+      title: t('error_title'),
+      message: error.response?.data?.message ? error.response.data.message : error
+    })
+  }
+}
+</script>
+
+<template>
+  <q-card class="my-card" @click="projectModal = true">
+    <q-parallax
+        :src="assetsRoute +  'images/projects.png'"
+        :height="150"
+    />
+
+    <q-card-section>
+      <div class="text-h6">{{ t('projects_mgmnt_card_title') }}</div>
+      <div class="text-subtitle2">{{ t('projects_mgmnt_card_subtitle') }}</div>
+    </q-card-section>
+  </q-card>
+
+  <q-dialog v-model="projectModal" full-width full-height>
+    <q-card>
+      <q-card-section>
+        <div class="text-h6">{{ t('projects_mgmnt_list_title') }}</div>
+      </q-card-section>
+
+      <q-separator/>
+      <q-separator/>
+      <q-card-section style="max-height: 80vh" class="scroll">
+        <q-list bordered class="rounded-borders" style="max-height: 68vh;">
+          <!--<q-item-label header>Supervisores</q-item-label>-->
+
+          <q-separator spaced/>
+          <q-item v-for="project in projects" :key="project.id">
+            <!--<q-item-section avatar top>
+              <q-avatar>
+                <img src="https://cdn.quasar.dev/img/avatar2.jpg">
+              </q-avatar>
+            </q-item-section>-->
+            <q-item-section top>
+              <q-item-label>{{ project.name }}</q-item-label>
+            </q-item-section>
+            <!--<q-item-section side top>
+              {{user.groupName}}
+            </q-item-section>-->
+
+            <!--<q-item-section top side>
+              <div class="text-grey-8 q-gutter-xs">
+                <q-btn size="12px" flat dense round icon="delete" @click="confirmDelete = true"/>
+              </div>
+            </q-item-section>-->
+          </q-item>
+
+        </q-list>
+      </q-card-section>
+
+      <q-separator/>
+
+      <q-card-actions align="right">
+        <q-btn flat :label="t('mng_act_btn_close')" color="primary" v-close-popup/>
+        <q-btn flat :label="t('projects_mgmnt_new_usr_btn')" color="positive" @click="newProject = true"/>
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="confirmDelete" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-avatar icon="signal_wifi_off" color="primary" text-color="white" />
+        <span class="q-ml-sm">¿Estás seguro que quieres desactivar este usuario?</span>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat label="Cancelar" color="primary" v-close-popup />
+        <q-btn flat label="Desactivar" color="negative" v-close-popup />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="newProject">
+    <q-card>
+      <q-form @submit.prevent="submitForm">
+        <q-card-section>
+          <div class="text-h6">{{ t('projects_mgmnt_modal_title') }}</div>
+          <div class="text-subtitle1">
+            {{ t('projects_mgmnt_modal_subtitle') }}
+          </div>
+        </q-card-section>
+        <q-separator inset />
+        <q-card-section class="column q-gutter-md">
+          <q-input
+              v-model="formState.name"
+              :label="t('users_mgmnt_modal_frm_name')"
+              :rules="[(val) => (val && val.length >3) || t('projects_mgmnt_modal_val_name'),]"></q-input>
+        </q-card-section>
+        <q-card-actions align="right">
+          <!--<q-btn flat>Cancel</q-btn>
+          <q-btn color="primary" type="submit">Create Account</q-btn>-->
+          <q-btn flat :label="t('global_cancel')" color="negative" v-close-popup />
+          <q-btn flat :label="t('global_save')" color="positive" type="submit" />
+        </q-card-actions>
+      </q-form>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="confirmCreate" persistent>
+    <q-card>
+      <q-card-section class="row items-center">
+        <q-avatar icon="signal_wifi_off" color="primary" text-color="white" />
+        <span class="q-ml-sm">{{ t('projects_mgmnt_modal_confirm', {fullname: formState.name}) }}?</span>
+        <br>
+      </q-card-section>
+
+      <q-card-actions align="right">
+        <q-btn flat :label="t('global_cancel')" color="negative" v-close-popup />
+        <q-btn flat :label="t('global_save')" color="positive" @click="saveUser" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+
+</template>
+
+
+<style scoped lang="scss">
+
+</style>

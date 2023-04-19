@@ -22,6 +22,8 @@ systemSettings:
 database:
     tables:
         - Cronos\Model\CronosAttendance
+        - Cronos\Model\CronosCustomers
+        - Cronos\Model\CronosProjects
 
 chunks:
   - name: 'GestionarSupervisores'
@@ -32,6 +34,8 @@ chunks:
     file: 'RegistrarActividad.html'
   - name: 'Reports'
     file: 'Reports.html'
+  - name: 'Projects'
+    file: 'Projects.html'
 
 build:
   scriptsAfter:

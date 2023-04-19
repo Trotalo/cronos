@@ -9,13 +9,15 @@ class CronosAttendance extends \Cronos\Model\CronosAttendance
     public static $metaMap = array (
         'package' => 'Cronos\\Model\\',
         'version' => '3.0',
-        'table' => 'vlox_cronos_attendance',
+        'table' => 'cronos_attendance',
         'tableMeta' => 
         array (
             'engine' => 'InnoDB',
         ),
         'fields' => 
         array (
+            'customer_id' => 0,
+            'project_id' => NULL,
             'supervisor_id' => NULL,
             'worker_id' => NULL,
             'in_date' => 0,
@@ -25,6 +27,22 @@ class CronosAttendance extends \Cronos\Model\CronosAttendance
         ),
         'fieldMeta' => 
         array (
+            'customer_id' => 
+            array (
+                'dbtype' => 'int',
+                'precision' => '11',
+                'attributes' => 'unsigned',
+                'phptype' => 'integer',
+                'default' => 0,
+            ),
+            'project_id' => 
+            array (
+                'dbtype' => 'int',
+                'precision' => '11',
+                'attributes' => 'unsigned',
+                'phptype' => 'integer',
+                'null' => false,
+            ),
             'supervisor_id' => 
             array (
                 'dbtype' => 'int',
