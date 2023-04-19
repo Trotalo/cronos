@@ -38,9 +38,13 @@
   const confirmCreate = ref(false)
   const confirmExit = ref(false)
   const users = ref([])
+  const projects = ref([])
   const attendance = ref([])
   const userOptions = ref([])
+  const location = ref({})
+  const url = ref("https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/static/pin-s+555555(-74.072064,4.9250304),pin-l+ff0000(-74.072064,4.9250304)/-74.0719,4.9249,15.66,0/300x200?access_token=pk.eyJ1IjoiY2FtaWNhc2U4MiIsImEiOiJja3lld3Z2eTcwZzlsMnFxa2t5eTd6d254In0.XEkd9yfN7-iEVR8FB-bUyQ")
   let originalOptions = []
+  let projectsOriginalOptions = []
   //configuration constants
   const wsRoute = inject('wsroute')
   const assetsRoute = inject('assetsRoute')
@@ -50,6 +54,8 @@
   onMounted(() => {
     loadAttendance()
     loadUsers()
+    loadLocation()
+    loadProjects()
   })
 
   function submitForm() {
@@ -166,6 +172,19 @@
       processError(error)
     }
   }
+  
+  async function loadProjects() {
+    try {
+      const response = await axios({
+        method: 'get',
+        url: window.location.protocol + "//" + window.location.hostname  + wsRoute + "?_rest=Projects"
+      }, axiosConfig)
+      projects.value = response.data.results
+      projectsOriginalOptions = response.data.results
+    } catch (error) {
+      processError(error)
+    }
+  }
 
   async function loadAttendance() {
     try {
@@ -225,6 +244,22 @@
       })  
     }
   }
+  
+  function loadLocation() {
+    const success = (position) => {
+      const latitude  = position.coords.latitude
+      const longitude = position.coords.longitude
+      location.value = {lat: latitude, lon: longitude}
+      console.log(latitude + "  " + longitude)
+    }
+
+    const error = (err) => {
+        console.log(error)
+    };
+
+    // This will open permission popup
+    navigator.geolocation.getCurrentPosition(success, error);
+}
 </script>
 
 <template>
@@ -373,8 +408,34 @@
               </q-item>
             </template>
           </q-select>
-
-
+          
+          <q-select
+            filled
+            v-model="formState.project_id"
+            use-input
+            hide-selected
+            fill-input
+            input-debounce="0"
+            :options="projects"
+            :option-value="'id'"
+            :option-label="'name'"
+            @filter="filterFn"
+            :hint="t('mng_act_new_register_sub_select')"
+          >
+            <template v-slot:no-option>
+              <q-item>
+                <q-item-section class="text-grey">
+                  No results
+                </q-item-section>
+              </q-item>
+            </template>
+          </q-select>
+          <q-img
+            :src="url"
+            spinner-color="white"
+            style="height: 140px; max-width: 150px"
+          />
+          
           <q-input
             v-model="formState.in_date"
             :label="t('mng_act_new_register_sub_time')"
