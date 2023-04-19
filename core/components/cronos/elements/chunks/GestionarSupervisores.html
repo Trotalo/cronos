@@ -2,6 +2,7 @@
   import {ref, onMounted, inject } from 'vue'
   import axios from 'axios'
   import { useQuasar } from 'quasar'
+  import { useI18n } from 'vue-i18n'
 
   const axiosConfig = {
     headers: {
@@ -30,6 +31,8 @@
   const wsRoute = inject('wsroute')
   const assetsRoute = inject('assetsRoute')
   
+  const { t } = useI18n()
+  
   onMounted(() => {
     loadUsers()
   })
@@ -45,7 +48,7 @@
     objectToStore.phone = objectToStore.phone.replace(/\D/g,'')
     $q.loading.show({
       delay: 400, // ms
-      message: 'Guardando...'
+      message: t('global_saving')
     })
     try {
       const response = await axios({
@@ -56,8 +59,8 @@
       loadUsers();
       $q.loading.hide()
        $q.dialog({
-        title: 'Exitoso!',
-        message: '¡Usuario creado exitosamente!'
+        title: t('global_success'),
+        message: t('mng_act_entry_success')
       })
       newSupervisor.value = false
       formState.value = {
@@ -70,11 +73,7 @@
 
     } catch (error) {
       $q.loading.hide()
-      $q.dialog({
-        title: 'Error',
-        message: error.response.data.message
-      })
-      
+      processError(error)
     }
   }
 
@@ -87,17 +86,7 @@
       console.log(response)
       users.value = response.data.results
     } catch (error) {
-      if (error?.response?.data?.message) {
-        $q.dialog({
-          title: 'Error',
-          message: error.response.data.message
-        })  
-      } else {
-        $q.dialog({
-            title: 'Error',
-            message: error
-          })  
-      }
+      processError(error)
       
     }
   }
@@ -109,6 +98,20 @@
   function validateEmail(email) {
     return /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/.test(email);
   }
+  
+  function processError(error) {
+    if (error.response?.status === 401) {
+        $q.dialog({
+          title: t('error_title'),
+          message: t('global_missing_session') 
+        })  
+    } else {
+      $q.dialog({
+        title: t('error_title'),
+        message: error.response?.data?.message ? error.response.data.message : error 
+      })  
+    }
+  }
 </script>
 
 <template>
@@ -119,22 +122,22 @@
     />
 
     <q-card-section>
-      <div class="text-h6">Gestionar Usuarios</div>
-      <div class="text-subtitle2">Crear o elimina supervisores y operarios</div>
+      <div class="text-h6">{{ t('users_mgmnt_card_title') }}</div>
+      <div class="text-subtitle2">{{ t('users_mgmnt_card_subtitle') }}</div>
     </q-card-section>
   </q-card>
 
   <q-dialog v-model="supervisorModal" full-width full-height>
     <q-card>
       <q-card-section>
-        <div class="text-h6">Administrar usuarios</div>
+        <div class="text-h6">{{ t('users_mgmnt_list_title') }}</div>
       </q-card-section>
 
       <q-separator/>
       <q-separator/>
 
       <q-card-section style="max-height: 80vh" class="scroll">
-        <q-list bordered class="rounded-borders" style="max-width: 100%">
+        <q-list bordered class="rounded-borders" style="max-height: 68vh;">
           <!--<q-item-label header>Supervisores</q-item-label>-->
 
           <q-separator spaced/>
@@ -165,8 +168,8 @@
       <q-separator/>
 
       <q-card-actions align="right">
-        <q-btn flat label="Cerrar" color="primary" v-close-popup/>
-        <q-btn flat label="Nuevo Usuario" color="positive" @click="newSupervisor = true"/>
+        <q-btn flat :label="t('mng_act_btn_close')" color="primary" v-close-popup/>
+        <q-btn flat :label="t('users_mgmnt_new_usr_btn')" color="positive" @click="newSupervisor = true"/>
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -189,47 +192,47 @@
     <q-card>
       <q-form @submit.prevent="submitForm">
         <q-card-section>
-          <div class="text-h6">Crear Nuevo Usuario</div>
+          <div class="text-h6">{{ t('users_mgmnt_modal_title') }}</div>
           <div class="text-subtitle1">
-            Completa los datos, para crear tu usuario!.
+            {{ t('users_mgmnt_modal_subtitle') }}
           </div>
         </q-card-section>
         <q-separator inset />
         <q-card-section class="column q-gutter-md">
-          <q-item-label header>Selecciona el tipo de usuario</q-item-label>
+          <q-item-label header>{{ t('users_mgmnt_modal_pick_usrtype') }}</q-item-label>
           <div class="q-gutter-sm">
             <q-radio v-model="formState.userType" val="Supervisor" label="Supervisor" />
             <q-radio v-model="formState.userType" val="Operator" label="Operario" />
           </div>
           <q-input
             v-model="formState.name"
-            label="Nombre *"
-            :rules="[(val) => (val && val.length > 5) || 'Ingresa un nombre!',]"></q-input>
+            :label="t('users_mgmnt_modal_frm_name')"
+            :rules="[(val) => (val && val.length > 5) || t('users_mgmnt_modal_val_name'),]"></q-input>
           <q-input
             v-model="formState.id"
             type="number"
-            label="Cedula *"
-            :rules="[(val) => (val && val.length > 5) || 'Ingresa un mumero de identificacion!',]"
+            :label="t('users_mgmnt_modal_frm_id')"
+            :rules="[(val) => (val && val.length > 5) || t('users_mgmnt_modal_val_id'),]"
             number></q-input>
           <q-input
             v-model="formState.email"
-            label="Correo *"
-            :rules="[(val) => validateEmail(val) || 'Ingresa un mail valido!.']"
+            :label="t('users_mgmnt_modal_frm_mail')"
+            :rules="[(val) => validateEmail(val) || t('users_mgmnt_modal_val_email')]"
           ></q-input>
           <q-input
             v-model.number="formState.phone"
-            label="Telefono"
+            :label="t('users_mgmnt_modal_frm_phone')"
             mask="(###) ### - ####"
             fill-mask
             hint="(###) ### - ####"
-            :rules="[(val) => (val && val.length > 5) || 'Ingresa un mumero de telefono!',]"
+            :rules="[(val) => (val && val.length > 5) || t('users_mgmnt_modal_val_phone'),]"
           ></q-input>
         </q-card-section>
         <q-card-actions align="right">
           <!--<q-btn flat>Cancel</q-btn>
           <q-btn color="primary" type="submit">Create Account</q-btn>-->
-          <q-btn flat label="Cancelar" color="negative" v-close-popup />
-          <q-btn flat label="Guardar" color="positive" type="submit" />
+          <q-btn flat :label="t('global_cancel')" color="negative" v-close-popup />
+          <q-btn flat :label="t('global_save')" color="positive" type="submit" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -239,14 +242,14 @@
     <q-card>
       <q-card-section class="row items-center">
         <q-avatar icon="signal_wifi_off" color="primary" text-color="white" />
-        <span class="q-ml-sm">¿Estás seguro que quieres crear al {{formState.userType === '0' ? 'Supervisor' : 'Operario' }}  {{formState.name}}?</span>
+        <span class="q-ml-sm">{{ t('users_mgmnt_modal_confirm', {usertype: formState.userType === '0' ? 'Supervisor' : 'Operario', fullname: formState.name}) }}?</span>
         <br>
-        <span class="q-ml-sm">Recuerde que el nombre de usuario es {{formState.email}} y la clave es {{formState.id}}</span>
+        <span class="q-ml-sm">{{ t('users_mgmnt_modal_credentials', {email: formState.email, id: formState.id}) }} </span>
       </q-card-section>
 
       <q-card-actions align="right">
-        <q-btn flat label="Cancelar" color="negative" v-close-popup />
-        <q-btn flat label="Guardar" color="positive" @click="saveUser" />
+        <q-btn flat :label="t('global_cancel')" color="negative" v-close-popup />
+        <q-btn flat :label="t('global_save')" color="positive" @click="saveUser" />
       </q-card-actions>
     </q-card>
   </q-dialog>
