@@ -148,7 +148,17 @@ function processError(error) {
             :rows="attendance"
             :columns="columns"
             row-key="name"
-        />
+        >
+          <template v-slot:body-cell-fullname="props">
+            <q-td :props="props">
+              <q-avatar>
+                <img :src="props.row.in_photo_check">
+              </q-avatar>
+              {{ props.row.fullname }}
+              <!--<img :src="props.row.in_photo_check">-->
+            </q-td>
+          </template>
+        </q-table>
       </q-card-section>
       <q-separator/>
       <q-card-actions align="right">

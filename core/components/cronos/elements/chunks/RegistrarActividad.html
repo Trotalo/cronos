@@ -93,7 +93,7 @@
         const compressedFile = await imageCompression(photo_check, compressOptions)
         //we load the picture
         var form_data = new FormData()
-        form_data.append("file", compressedFile)
+        form_data.append("file", compressedFile, compressedFile.name)
         form_data.append("worker_id", objectToStore.worker_id)
         const fileResponse = await axios({
           method: "post",
@@ -255,7 +255,7 @@
 
           <q-separator spaced/>-->
           <q-item v-for="registry in attendance" :key="registry.id">
-            <q-btn @click="registerWorkerExit(registry)">
+            <q-btn class="full-width" @click="registerWorkerExit(registry)">
               <template v-slot:default>
                 <q-item-section avatar top>
                   <q-avatar>
@@ -267,7 +267,7 @@
                     <span>{{user.fullname}}</span>
                   </q-item-label>-->
                   <q-item-label>{{ registry.fullname }}</q-item-label>
-                  <q-item-label caption lines="1">IN: {{ longToDateTime(registry.in_date) }}</q-item-label>
+                  <q-item-label caption lines="1">{{ longToDateTime(registry.in_date) }}</q-item-label>
     
                 </q-item-section>
                 <q-item-section top side>

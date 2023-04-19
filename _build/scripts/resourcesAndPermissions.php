@@ -78,8 +78,8 @@ $content = <<<HTML
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
-    <script type="module" crossorigin src="/assets/components/cronos/1/js/index-03180710.js"></script>
-    <link rel="stylesheet" href="/assets/components/cronos/1/css/index-a43169bf.css">
+    <script type="module" crossorigin src="/assets/components/cronos/1/js/index-fb1489e0.js"></script>
+    <link rel="stylesheet" href="/assets/components/cronos/1/css/index-1b614cd8.css">
   </head>
   <body>
     <div id="q-app" style="min-height: 60rem;"></div>
@@ -97,8 +97,8 @@ $content = <<<HTML
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
-    <script type="module" crossorigin src="/assets/components/cronos/22/js/index-7dcad71e.js"></script>
-    <link rel="stylesheet" href="/assets/components/cronos/22/css/index-f62128b0.css">
+    <script type="module" crossorigin src="/assets/components/cronos/22/js/index-cc021da7.js"></script>
+    <link rel="stylesheet" href="/assets/components/cronos/22/css/index-8fff574a.css">
   </head>
   <body>
     <div id="q-app" style="min-height: 60rem;"></div>
@@ -120,8 +120,8 @@ $content = <<<HTML
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vite App</title>
-    <script type="module" crossorigin src="/assets/components/cronos/23/js/index-80e34541.js"></script>
-    <link rel="stylesheet" href="/assets/components/cronos/23/css/index-4473896e.css">
+    <script type="module" crossorigin src="/assets/components/cronos/23/js/index-209b2b50.js"></script>
+    <link rel="stylesheet" href="/assets/components/cronos/23/css/index-cf4b0d0e.css">
   </head>
   <body>
     <div id="q-app" style="min-height: 60rem;"></div>
