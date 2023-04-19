@@ -7,7 +7,9 @@ $xpdo_meta_map = array (
     array (
         'xPDO\\Om\\xPDOSimpleObject' => 
         array (
-            0 => 'Cronos\\Model\\CronosAttendance',
+            0 => 'Cronos\\Model\\CronosCustomers',
+            1 => 'Cronos\\Model\\CronosAttendance',
+            2 => 'Cronos\\Model\\CronosProjects',
         ),
     ),
 );
