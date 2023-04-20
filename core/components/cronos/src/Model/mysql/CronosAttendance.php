@@ -24,6 +24,10 @@ class CronosAttendance extends \Cronos\Model\CronosAttendance
             'out_date' => 0,
             'in_photo_check' => '',
             'out_photo_check' => '',
+            'in_coordinates' => NULL,
+            'out_coordinates' => NULL,
+            'in_photo_location' => '',
+            'out_photo_location' => '',
         ),
         'fieldMeta' => 
         array (
@@ -84,6 +88,34 @@ class CronosAttendance extends \Cronos\Model\CronosAttendance
                 'default' => '',
             ),
             'out_photo_check' => 
+            array (
+                'dbtype' => 'varchar',
+                'precision' => '255',
+                'phptype' => 'string',
+                'null' => false,
+                'default' => '',
+            ),
+            'in_coordinates' => 
+            array (
+                'dbtype' => 'json',
+                'phptype' => 'json',
+                'null' => true,
+            ),
+            'out_coordinates' => 
+            array (
+                'dbtype' => 'json',
+                'phptype' => 'json',
+                'null' => true,
+            ),
+            'in_photo_location' => 
+            array (
+                'dbtype' => 'varchar',
+                'precision' => '255',
+                'phptype' => 'string',
+                'null' => false,
+                'default' => '',
+            ),
+            'out_photo_location' => 
             array (
                 'dbtype' => 'varchar',
                 'precision' => '255',
