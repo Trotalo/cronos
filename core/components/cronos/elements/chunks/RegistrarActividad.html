@@ -42,19 +42,21 @@
   const attendance = ref([])
   const userOptions = ref([])
   const location = ref({})
-  const url = ref("https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/static/pin-s+555555(-74.072064,4.9250304),pin-l+ff0000(-74.072064,4.9250304)/-74.0719,4.9249,15.66,0/300x200?access_token=pk.eyJ1IjoiY2FtaWNhc2U4MiIsImEiOiJja3lld3Z2eTcwZzlsMnFxa2t5eTd6d254In0.XEkd9yfN7-iEVR8FB-bUyQ")
   let originalOptions = []
   let projectsOriginalOptions = []
+  let locationImgBlob
   //configuration constants
   const wsRoute = inject('wsroute')
   const assetsRoute = inject('assetsRoute')
-  
+  const mapBoxKey = inject('mapBoxKey')
+  const mapBoxbaseUrl = "https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/static/pin-s+555555"
+  const mapImgUrl = ref("")
   const { t } = useI18n()
 
   onMounted(() => {
     loadAttendance()
     loadUsers()
-    loadLocation()
+    //loadLocation()
     loadProjects()
   })
 
@@ -245,16 +247,40 @@
     }
   }
   
+  function loadForms() {
+    formState.value = {
+      supervisor_id: 666,
+      worker_id: 0,
+      in_date: newIngreso.value ? new Date().toLocaleString('es-CO', {dateStyle: 'medium', timeStyle: 'short', hour12: true}) : 0,
+      out_date: exitModal.value ? new Date().toLocaleString('es-CO', {dateStyle: 'medium', timeStyle: 'short', hour12: true}) : 0,
+      in_photo_check: '',
+      out_photo_check: '',
+    }
+    loadLocation()
+    loadUsers()
+  }
+  
   function loadLocation() {
-    const success = (position) => {
+    $q.loading.show({
+      delay: 400, // ms
+      message: t('loading_location')
+    })
+    const success = async (position) => {
       const latitude  = position.coords.latitude
       const longitude = position.coords.longitude
       location.value = {lat: latitude, lon: longitude}
-      console.log(latitude + "  " + longitude)
+      //console.log(latitude + "  " + longitude)
+      let imgUrl = mapBoxbaseUrl + `(${longitude},${latitude})/${longitude},${latitude},16,0/300x200?access_token=${mapBoxKey}`
+      const image = await fetch(imgUrl)
+      locationImgBlob = await image.blob()
+      mapImgUrl.value = URL.createObjectURL(locationImgBlob)
+  
+      $q.loading.hide()
     }
 
     const error = (err) => {
-        console.log(error)
+      $q.loading.hide()
+      console.log(err)
     };
 
     // This will open permission popup
@@ -326,23 +352,28 @@
     </q-card>
   </q-dialog>
 
-  <q-dialog v-model="exitModal">
-    <q-card>
+  <q-dialog v-model="exitModal" @before-show="loadForms">
+    <q-card class="card-style">
       <q-form @submit.prevent="confirmExit = true">
         <q-card-section>
           <div class="text-h6">{{ t('mng_act_exit_modal_title') }}</div>
           <div class="text-subtitle1">
-            {{t('mng_act_exit_modal_confirm', { fullname: formState.fullname }) }}
+            <!--{{t('mng_act_exit_modal_confirm', { fullname: formState.fullname }) }}-->
+            {{formState.out_date}}
           </div>
         </q-card-section>
         <q-separator inset/>
+        <q-img
+            :src="mapImgUrl"
+            spinner-color="white"
+            class="image"
+          />
         <q-card-section class="column q-gutter-md">
-          <q-input
+          <!--<q-input
             v-model="formState.out_date"
             :label="t('mng_act_new_register_sub_time')"
             readonly
-          ></q-input>
-
+          ></q-input>-->
           <q-uploader
             style="width: 97%"
             label="Toma una foto para validacion"
@@ -376,16 +407,21 @@
     </q-card>
   </q-dialog>
 
-  <q-dialog v-model="newIngreso" @before-show="loadUsers">
-    <q-card>
+  <q-dialog v-model="newIngreso" @before-show="loadForms">
+    <q-card class="card-style">
       <q-form @submit.prevent="submitForm">
         <q-card-section>
           <div class="text-h6">{{ t('mng_act_new_register_title')}}</div>
           <div class="text-subtitle1">
-            {{ t('mng_act_new_register_sub_title') }}
+            {{ formState.in_date }}
           </div>
         </q-card-section>
         <q-separator inset/>
+        <q-img
+            :src="mapImgUrl"
+            spinner-color="white"
+            class="image"
+          />
         <q-card-section class="column q-gutter-md">
           <q-select
             filled
@@ -430,25 +466,6 @@
               </q-item>
             </template>
           </q-select>
-          <q-img
-            :src="url"
-            spinner-color="white"
-            style="height: 140px; max-width: 150px"
-          />
-          
-          <q-input
-            v-model="formState.in_date"
-            :label="t('mng_act_new_register_sub_time')"
-            readonly
-          ></q-input>
-
-          <!--<q-input
-            v-model="formState.comments"
-            label="Comentarios"
-            filled
-            type="textarea"
-          />-->
-
           <q-uploader
             style="width: 97%"
             url="http://localhost:4444/upload"
@@ -515,5 +532,12 @@
 
 
 <style scoped lang="scss">
-
+  .image {
+    height: 280px;
+    margin: 16px auto 0 auto;
+  }
+  .card-style{
+    max-width: 90vw;
+    width: 90vw;
+  }
 </style>

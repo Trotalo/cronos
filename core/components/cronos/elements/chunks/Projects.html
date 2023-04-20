@@ -18,14 +18,16 @@ const formState = ref({
   name: ''
 });
 
-const newProject = ref(false);
-const projectModal = ref(false);
-const confirmDelete = ref(false);
-const confirmCreate = ref(false);
-const projects = ref([]);
+const newProject = ref(false)
+const projectModal = ref(false)
+const confirmDelete = ref(false)
+const confirmCreate = ref(false)
+const projects = ref([])
 //constant for webservices routes
 const wsRoute = inject('wsroute')
 const assetsRoute = inject('assetsRoute')
+
+let originalProjectList = []
 
 const { t } = useI18n()
 
@@ -76,6 +78,7 @@ async function loadProjects() {
     }, axiosConfig)
     console.log(response)
     projects.value = response.data.results
+    originalProjectList = response.data.results
   } catch (error) {
     processError(error)
 
@@ -98,6 +101,14 @@ function processError(error) {
       message: error.response?.data?.message ? error.response.data.message : error
     })
   }
+}
+
+function validateProjectName(name) {
+  if (originalProjectList.filter(project => project.name === name).length > 0  ) {
+    return t('projects_mgmnt_modal_val_dupname')
+  }
+  return true
+  //(val) => (val && originalProjectList.filter((project)=> project===val ) ) || 'fuccck!'
 }
 </script>
 
@@ -187,7 +198,8 @@ function processError(error) {
           <q-input
               v-model="formState.name"
               :label="t('users_mgmnt_modal_frm_name')"
-              :rules="[(val) => (val && val.length >3) || t('projects_mgmnt_modal_val_name'),]"></q-input>
+              :rules="[(val) => (val && val.length > 2) || t('projects_mgmnt_modal_val_name'),
+                       validateProjectName]"></q-input>
         </q-card-section>
         <q-card-actions align="right">
           <!--<q-btn flat>Cancel</q-btn>

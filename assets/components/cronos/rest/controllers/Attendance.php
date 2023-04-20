@@ -64,14 +64,14 @@ class CronosAttendance extends  modRestController {
     if (strcmp($userGroup['name'], 'ServiceManager') === 0 || strcmp($userGroup['name'], 'Administrator') === 0 ) {
       $queryText = "select usrAttribute.internalKey as operator_id, 
                     usrAttribute.fullname, attendance.*
-                    from modx_vlox_cronos_attendance attendance, 
+                    from modx_cronos_attendance attendance, 
                       modx_user_attributes as usrAttribute
                           where attendance.worker_id = usrAttribute.internalKey";
     } else {
       $userId = $userGroup['userId'];
       $queryText = "select attendance.*, usrAttribute.internalKey as operator_id, 
                     usrAttribute.fullname
-                    from modx_vlox_cronos_attendance attendance, 
+                    from modx_cronos_attendance attendance, 
                       modx_user_attributes as usrAttribute
                           where attendance.supervisor_id =  $userId
                           and attendance.out_date = 0

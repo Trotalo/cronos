@@ -14,6 +14,10 @@
         <field key="out_date" dbtype="int" precision="20" phptype="timestamp" null="false" default="0" />
         <field key="in_photo_check" dbtype="varchar" precision="255" phptype="string" null="false" default="" />
         <field key="out_photo_check" dbtype="varchar" precision="255" phptype="string" null="false" default="" />
+        <field key="in_coordinates" dbtype="json" phptype="json" null="true"/>
+        <field key="out_coordinates" dbtype="json" phptype="json" null="true"/>
+        <field key="in_photo_location" dbtype="varchar" precision="255" phptype="string" null="false" default="" />
+        <field key="out_photo_location" dbtype="varchar" precision="255" phptype="string" null="false" default="" />
     </object>
 
     <object class="CronosProjects" table="cronos_projects">

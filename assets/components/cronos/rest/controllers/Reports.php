@@ -100,7 +100,7 @@ class CronosReports extends \MODX\Revolution\Rest\modRestController {
               attendance.worker_id, FROM_UNIXTIME(attendance.in_date) as entrada, 
               if(attendance.out_date = 0, 'No registra', FROM_UNIXTIME(attendance.out_date)) as salida, 
               attendance.in_photo_check, attendance.out_photo_check
-              from modx_vlox_cronos_attendance attendance, 
+              from modx_cronos_attendance attendance, 
                 modx_user_attributes as usrAttribute
                     where attendance.worker_id = usrAttribute.internalKey";
 
